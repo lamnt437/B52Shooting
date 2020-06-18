@@ -59,6 +59,19 @@ public class Client {
         }
     }
 
+    public void sendNewShotMessage(int xPos, int yPos) {
+        String message = Message.createNewShotMessage(xPos, yPos);
+        try {
+            // System.out.println("(" + message + ")");
+            writer.write(message);
+            writer.newLine();
+            writer.flush();
+        } catch(IOException ex) {
+            System.out.println("Error occured when client trying to send message: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
     public void processMessage(String message) {
         int messageType = Message.getType(message);
 
@@ -74,6 +87,14 @@ public class Client {
                 int yPos = Integer.parseInt(parts[3]);
 
                 playGround.updatePlayer(playerId, xPos, yPos);
+                break;
+
+            case Message.NEW_SHOT:
+                String[] partshot = message.split(",");
+                int shotXPos = Integer.parseInt(partshot[1]);
+                int shotYPos = Integer.parseInt(partshot[2]);
+
+                playGround.addShot(shotXPos, shotYPos);
                 break;
         }
     }
