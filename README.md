@@ -1,5 +1,7 @@
 # B52Shooting
-Shoot as many B52s as you can!
+## Shoot as many B52s as you can!
+
+Install JavaFx [here](https://gluonhq.com/products/javafx/)
 
 Compile and run (on Windows, using CMD)
 ```bash
