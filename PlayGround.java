@@ -12,6 +12,8 @@ import javafx.stage.Stage;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+import java.util.List;
+import java.util.ArrayList;
 
 public class PlayGround extends Application {
     static final Image PLAYER_IMG = new Image("./images/player.png");
@@ -21,10 +23,14 @@ public class PlayGround extends Application {
 
     private GraphicsContext gc;
 
-    Rocket player;
+    // Rocket player;
+    List<Rocket> players;
+    int currentPlayerId = -1;
     private double mouseX;
     private double mouseY;
 
+    /* network */
+    protected Client client;
 
 
     /* start */
@@ -32,14 +38,17 @@ public class PlayGround extends Application {
         Canvas canvas = new Canvas(WIDTH, HEIGHT);
         gc = canvas.getGraphicsContext2D();
 
+        setup();
+
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5), e -> run(gc)));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
         
         canvas.setCursor(Cursor.MOVE);
         canvas.setOnMouseMoved(e -> {mouseX = e.getX(); mouseY = e.getY();});
+
         // mouse click event handling for shooting
-        setup();
+        
         stage.setScene(new Scene(new StackPane(canvas)));
         stage.setTitle("Play Ground");
         stage.show();
@@ -47,7 +56,20 @@ public class PlayGround extends Application {
 
     /* setup */
     private void setup() {
-        player = new Rocket(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG);
+        client = new Client("localhost", 5000, this);
+
+        while(currentPlayerId == -1) {
+            System.out.println("Waiting for player id from server...");
+        }
+
+        // build array of players
+        players = new ArrayList<>();
+        for(int i = 0; i <= currentPlayerId; i++) {
+            Rocket player = new Rocket(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG);
+            players.add(player);
+        }
+
+        // todo: create new threads to get other player positions and draw
     }
 
     /* run graphicscontext */
@@ -68,10 +90,19 @@ public class PlayGround extends Application {
 		// }
 		// univ.forEach(Universe::draw);
 	
-		// player.update(); /* for explosion logic */
+        // player.update(); /* for explosion logic */
+        for(int i = 0; i < players.size(); i++) {
+            if(i != currentPlayerId) {
+                Rocket ally = players.get(i);
+                ally.draw();
+            }
+        }
+        
+        Rocket player = players.get(currentPlayerId);
 		player.draw();
         player.posX = (int) mouseX;
         player.posY = (int) mouseY;
+        client.sendPosition(currentPlayerId, player.posX, player.posY);
 		
 		// Bombs.stream().peek(Rocket::update).peek(Rocket::draw).forEach(e -> {
 		// 	if(player.colide(e) && !player.exploding) {
@@ -111,7 +142,26 @@ public class PlayGround extends Application {
 		// 	if(univ.get(i).posY > HEIGHT)
 		// 		univ.remove(i);
 		// }
-	}
+    }
+    
+    public void setCurrentPlayerId(int playerId) {
+        currentPlayerId = playerId;
+    }
+
+    public void addPlayer() {
+        Rocket player = new Rocket(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG);
+        players.add(player);
+    }
+
+    public Rocket getPlayer(int id) {
+        return players.get(id);
+    }
+
+    public void updatePlayer(int id, int xPos, int yPos) {
+        Rocket player = players.get(id);
+        player.posX = xPos;
+        player.posY = yPos;
+    }
 
     public class Rocket {
 
