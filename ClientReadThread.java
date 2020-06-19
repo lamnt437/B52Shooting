@@ -14,7 +14,7 @@ public class ClientReadThread extends Thread {
         while(true) {
             try {
                 String message = reader.readLine();
-                System.out.println("(" + message + ")");
+                // System.out.println("(" + message + ")");
                 client.processMessage(message);
             } catch(IOException ex) {
                 System.out.println("Error occurs when client reading: " + ex.getMessage());

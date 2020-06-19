@@ -3,6 +3,8 @@ import java.net.Socket;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -10,17 +12,26 @@ public class Server {
     private int port;
     private Set<UserThread> userThreads = new HashSet<>();
     private List<Integer> players;
+    // private Set<Shot> shots;
+    private Map<Integer,Shot> shots;
     private int numberOfPlayers = 0;
+    private int numberOfShots = 0;
  
     public Server(int port) {
         this.port = port;
         players = new ArrayList<>();
+        // shots = new ArrayList<>();
+        shots = new HashMap<Integer,Shot>();
     }
  
     public void execute() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
  
             System.out.println("Server is listening on port " + port);
+
+            // create a new shotThread for updating shot positions
+            ShotThread shotThread = new ShotThread(this, shots);
+            shotThread.start();
  
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -92,4 +103,15 @@ public class Server {
     // boolean hasUsers() {
     //     return !this.userNames.isEmpty();
     // }
+
+    public int addShot(int xPos, int yPos) {
+        Shot newShot = new Shot(xPos, yPos);
+
+        // add new shot to shot list
+        shots.put(numberOfShots, newShot);
+        int id = numberOfShots;
+        numberOfShots++;
+
+        return id;
+    }
 }

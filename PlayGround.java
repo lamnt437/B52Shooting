@@ -12,19 +12,20 @@ import javafx.stage.Stage;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public class PlayGround extends Application {
     static final Image PLAYER_IMG = new Image("./images/player.png");
     private static final int WIDTH = 800;
     private static final int HEIGHT = 600;
     private static final int PLAYER_SIZE = 60;
+    private static final int MAX_SHOTS = 1000;
 
     private GraphicsContext gc;
 
     // Rocket player;
-    List<Rocket> players;
+    List<RocketUI> players;
+    Map<Integer,ShotUI> shots;
     int currentPlayerId = -1;
     private double mouseX;
     private double mouseY;
@@ -40,12 +41,24 @@ public class PlayGround extends Application {
 
         setup();
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5), e -> run(gc)));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), e -> run(gc)));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
         
         canvas.setCursor(Cursor.MOVE);
         canvas.setOnMouseMoved(e -> {mouseX = e.getX(); mouseY = e.getY();});
+        canvas.setOnMouseClicked(e -> {
+            RocketUI player = players.get(currentPlayerId);
+			if(shots.size() < MAX_SHOTS) {
+                ShotUI newShot = player.shoot();
+                // shots.put(1, newShot);
+                client.sendNewShotMessage(newShot.posX, newShot.posY);
+            }
+			// if(gameOver) { 
+			// 	gameOver = false;
+			// 	setup();
+			// }
+		});
 
         // mouse click event handling for shooting
         
@@ -65,11 +78,11 @@ public class PlayGround extends Application {
         // build array of players
         players = new ArrayList<>();
         for(int i = 0; i <= currentPlayerId; i++) {
-            Rocket player = new Rocket(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG);
+            RocketUI player = new RocketUI(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG, gc);
             players.add(player);
         }
 
-        // todo: create new threads to get other player positions and draw
+        shots = new HashMap<Integer,ShotUI>();
     }
 
     /* run graphicscontext */
@@ -93,12 +106,12 @@ public class PlayGround extends Application {
         // player.update(); /* for explosion logic */
         for(int i = 0; i < players.size(); i++) {
             if(i != currentPlayerId) {
-                Rocket ally = players.get(i);
+                RocketUI ally = players.get(i);
                 ally.draw();
             }
         }
         
-        Rocket player = players.get(currentPlayerId);
+        RocketUI player = players.get(currentPlayerId);
 		player.draw();
         player.posX = (int) mouseX;
         player.posY = (int) mouseY;
@@ -110,7 +123,7 @@ public class PlayGround extends Application {
 		// 	}
 		// });
 		
-		
+		// /* old code for shots arraylist */
 		// for (int i = shots.size() - 1; i >=0 ; i--) {
 		// 	Shot shot = shots.get(i);
 		// 	if(shot.posY < 0 || shot.toRemove)  { 
@@ -119,13 +132,13 @@ public class PlayGround extends Application {
 		// 	}
 		// 	shot.update();
 		// 	shot.draw();
-		// 	for (Bomb bomb : Bombs) {
-		// 		if(shot.colide(bomb) && !bomb.exploding) {
-		// 			score++;
-		// 			bomb.explode();
-		// 			shot.toRemove = true;
-		// 		}
-		// 	}
+		// 	// for (Bomb bomb : Bombs) {
+		// 	// 	if(shot.colide(bomb) && !bomb.exploding) {
+		// 	// 		score++;
+		// 	// 		bomb.explode();
+		// 	// 		shot.toRemove = true;
+		// 	// 	}
+		// 	// }
 		// }
 		
 		// for (int i = Bombs.size() - 1; i >= 0; i--){  
@@ -141,7 +154,22 @@ public class PlayGround extends Application {
 		// for (int i = 0; i < univ.size(); i++) {
 		// 	if(univ.get(i).posY > HEIGHT)
 		// 		univ.remove(i);
-		// }
+        // }
+        
+        /* Traversing Shots map */
+        try {
+            Set set = shots.entrySet();
+            Iterator iter = set.iterator();
+            while(iter.hasNext()) {
+                Map.Entry entry = (Map.Entry) iter.next();
+                int id = (int) entry.getKey();
+                ShotUI shot = (ShotUI) entry.getValue();
+                shot.draw();
+            }
+        } catch(ConcurrentModificationException ex) {
+            // System.out.println("Concurrent!");
+        }
+        
     }
     
     public void setCurrentPlayerId(int playerId) {
@@ -149,64 +177,125 @@ public class PlayGround extends Application {
     }
 
     public void addPlayer() {
-        Rocket player = new Rocket(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG);
+        RocketUI player = new RocketUI(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG, gc);
         players.add(player);
     }
 
-    public Rocket getPlayer(int id) {
+    public RocketUI getPlayer(int id) {
         return players.get(id);
     }
 
     public void updatePlayer(int id, int xPos, int yPos) {
-        Rocket player = players.get(id);
+        RocketUI player = players.get(id);
         player.posX = xPos;
         player.posY = yPos;
     }
 
-    public class Rocket {
-
-        int posX, posY, size;
-        // boolean exploding, destroyed;
-        Image img;
-        // int explosionStep = 0;
-        
-        public Rocket(int posX, int posY, int size,  Image image) {
-            this.posX = posX;
-            this.posY = posY;
-            this.size = size;
-            img = image;
-        }
-        
-        // public Shot shoot() {
-        //     return new Shot(posX + size / 2 - Shot.size / 2, posY - Shot.size);
-        // }
-    
-        // public void update() {
-        //     if(exploding) explosionStep++;
-        //     destroyed = explosionStep > EXPLOSION_STEPS;
-        // }
-        
-        public void draw() {
-            // if(exploding) {
-            //     gc.drawImage(EXPLOSION_IMG, explosionStep % EXPLOSION_COL * EXPLOSION_W, (explosionStep / EXPLOSION_ROWS) * EXPLOSION_H + 1,
-            //             EXPLOSION_W, EXPLOSION_H,
-            //             posX, posY, size, size);
-            // }
-            // else {
-                gc.drawImage(img, posX, posY, size, size);
-            // }
-        }
-    
-        // public boolean colide(Rocket other) {
-        //     int d = distance(this.posX + size / 2, this.posY + size /2, 
-        //                     other.posX + other.size / 2, other.posY + other.size / 2);
-        //     return d < other.size / 2 + this.size / 2 ;
-        // }
-        
-        // public void explode() {
-        //     exploding = true;
-        //     explosionStep = -1;
-        // }
-    
+    public void addShot(int shotId, int xPos, int yPos) {
+        ShotUI newShot = new ShotUI(xPos, yPos, gc);
+        shots.put(shotId, newShot);
     }
+
+    public void updateShot(int shotId, int xPos, int yPos) {
+        Shot shot = shots.get(shotId);
+        if(shot != null) {
+            shot.posX = xPos;
+            shot.posY = yPos;
+        }
+    }
+
+    public void removeShot(int shotId) {
+        ShotUI shot = shots.remove(shotId);
+        if(shot != null) {
+            // System.out.printf("Removed shot: %d %d %d\n", shotId, shot.posX, shot.posY);
+            shot.draw();
+        }
+            
+    }
+
+    // public class Rocket {
+
+    //     int posX, posY, size;
+    //     // boolean exploding, destroyed;
+    //     Image img;
+    //     // int explosionStep = 0;
+        
+    //     public Rocket(int posX, int posY, int size,  Image image) {
+    //         this.posX = posX;
+    //         this.posY = posY;
+    //         this.size = size;
+    //         img = image;
+    //     }
+        
+    //     public Shot shoot() {
+    //         return new Shot(posX + size / 2 - Shot.size / 2, posY - Shot.size);
+    //     }
+    
+    //     // public void update() {
+    //     //     if(exploding) explosionStep++;
+    //     //     destroyed = explosionStep > EXPLOSION_STEPS;
+    //     // }
+        
+    //     public void draw() {
+    //         // if(exploding) {
+    //         //     gc.drawImage(EXPLOSION_IMG, explosionStep % EXPLOSION_COL * EXPLOSION_W, (explosionStep / EXPLOSION_ROWS) * EXPLOSION_H + 1,
+    //         //             EXPLOSION_W, EXPLOSION_H,
+    //         //             posX, posY, size, size);
+    //         // }
+    //         // else {
+    //             gc.drawImage(img, posX, posY, size, size);
+    //         // }
+    //     }
+    
+    //     // public boolean colide(Rocket other) {
+    //     //     int d = distance(this.posX + size / 2, this.posY + size /2, 
+    //     //                     other.posX + other.size / 2, other.posY + other.size / 2);
+    //     //     return d < other.size / 2 + this.size / 2 ;
+    //     // }
+        
+    //     // public void explode() {
+    //     //     exploding = true;
+    //     //     explosionStep = -1;
+    //     // }
+    
+    // }
+
+    // //bullets
+	// public class Shot {
+		
+	// 	public boolean toRemove;
+
+	// 	int posX, posY, speed = 20;
+	// 	static final int size = 6;
+			
+	// 	public Shot(int posX, int posY) {
+	// 		this.posX = posX;
+	// 		this.posY = posY;
+	// 	}
+
+	// 	public void update() {
+	// 		posY-=speed;
+	// 	}
+		
+
+	// 	public void draw() {
+    //         // gc.setFill(Color.RED);
+    //         gc.setFill(Color.YELLOWGREEN);
+    //         gc.fillRect(posX-5, posY-10, size+10, size+30);
+	// 		// if (score >=50 && score<=70 || score>=120) {
+	// 		// 	gc.setFill(Color.YELLOWGREEN);
+	// 		// 	speed = 50;
+	// 		// 	gc.fillRect(posX-5, posY-10, size+10, size+30);
+	// 		// } else {
+	// 		// gc.fillOval(posX, posY, size, size);
+    //         // }
+    //         // gc.fillOval(posX, posY, size, size);
+	// 	}
+		
+	// 	// public boolean collide(Rocket Rocket) {
+	// 	// 	int distance = distance(this.posX + size / 2, this.posY + size / 2, 
+	// 	// 			Rocket.posX + Rocket.size / 2, Rocket.posY + Rocket.size / 2);
+	// 	// 	return distance  < Rocket.size / 2 + size / 2;
+	// 	// }
+	// }
 }
