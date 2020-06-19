@@ -1,12 +1,6 @@
 import java.io.*;
 import java.net.*;
  
-/**
- * This thread handles connection for each connected client, so the server
- * can handle multiple clients at the same time.
- *
- * @author www.codejava.net
- */
 public class UserThread extends Thread {
     private Socket socket;
     private Server server;
@@ -34,8 +28,9 @@ public class UserThread extends Thread {
  
             do {
                 clientMessage = reader.readLine();
-                System.out.println(clientMessage);
-                server.broadcast(clientMessage, this);
+                // System.out.println(clientMessage);
+                // server.broadcast(clientMessage, this);
+                processClientMessage(clientMessage);
             } while (!clientMessage.equals("bye"));
  
             socket.close(); 
@@ -50,5 +45,30 @@ public class UserThread extends Thread {
      */
     void sendMessage(String message) {
         writer.println(message);
+    }
+
+    void processClientMessage(String message) {
+        // System.out.println(message);
+        int type = Message.getType(message);
+        switch(type) {
+            case Message.NEW_PLAYER:
+                server.broadcast(message, this);
+                break;
+            case Message.POSITION:
+                server.broadcast(message, this);
+                break;
+            case Message.CLIENT_NEW_SHOT:
+                // System.out.println(message);
+                String[] parts = message.split(",");
+                int xPos = Integer.parseInt(parts[1]);
+                int yPos = Integer.parseInt(parts[2]);
+                int shotId = server.addShot(xPos, yPos);
+                // System.out.printf("%d,%d,%d\n", shotId, xPos, yPos);
+                String broadcastMessage = Message.createServerNewShotMessage(shotId, xPos, yPos);
+                server.broadcast(broadcastMessage, null);
+                break;
+            default:
+                break;
+        }
     }
 }

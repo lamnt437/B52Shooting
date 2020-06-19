@@ -2,8 +2,11 @@ public class Message {
     public static final int POSITION = 1;
     public static final int NEW_PLAYER = 2;
     public static final int OPPONENT_POS = 3;
-    public static final int NEW_SHOT = 4;
-    public static final int SHOT_POS = 5;
+    public static final int CLIENT_NEW_SHOT = 4;
+    public static final int SERVER_NEW_SHOT = 5;
+    public static final int SHOT_POS = 6;
+    public static final int REMOVE_SHOT = 7;
+    // public static final int ACK_SHOT = 6;
 
     public static String createInitIdMessage(int playerId) {
         String message = Integer.toString(playerId);
@@ -37,8 +40,18 @@ public class Message {
         return message;
     }
 
-    public static String createNewShotMessage(int xPos, int yPos) {
-        String message = String.format("%d,%d,%d", NEW_SHOT, xPos, yPos);
+    public static String createClientNewShotMessage(int xPos, int yPos) {
+        String message = String.format("%d,%d,%d", CLIENT_NEW_SHOT, xPos, yPos);
+        return message;
+    }
+
+    public static String createServerNewShotMessage(int shotId, int xPos, int yPos) {
+        String message = String.format("%d,%d,%d,%d", SERVER_NEW_SHOT, shotId, xPos, yPos);
+        return message;
+    }
+
+    public static String createRemoveShotMessage(int shotId) {
+        String message = String.format("%d,%d", REMOVE_SHOT, shotId);
         return message;
     }
 

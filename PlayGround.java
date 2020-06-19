@@ -12,8 +12,7 @@ import javafx.stage.Stage;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public class PlayGround extends Application {
     static final Image PLAYER_IMG = new Image("./images/player.png");
@@ -25,8 +24,8 @@ public class PlayGround extends Application {
     private GraphicsContext gc;
 
     // Rocket player;
-    List<Rocket> players;
-    List<Shot> shots;
+    List<RocketUI> players;
+    Map<Integer,ShotUI> shots;
     int currentPlayerId = -1;
     private double mouseX;
     private double mouseY;
@@ -42,17 +41,17 @@ public class PlayGround extends Application {
 
         setup();
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5), e -> run(gc)));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), e -> run(gc)));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
         
         canvas.setCursor(Cursor.MOVE);
         canvas.setOnMouseMoved(e -> {mouseX = e.getX(); mouseY = e.getY();});
         canvas.setOnMouseClicked(e -> {
-            Rocket player = players.get(currentPlayerId);
+            RocketUI player = players.get(currentPlayerId);
 			if(shots.size() < MAX_SHOTS) {
-                Shot newShot = player.shoot();
-                shots.add(newShot);
+                ShotUI newShot = player.shoot();
+                // shots.put(1, newShot);
                 client.sendNewShotMessage(newShot.posX, newShot.posY);
             }
 			// if(gameOver) { 
@@ -79,13 +78,11 @@ public class PlayGround extends Application {
         // build array of players
         players = new ArrayList<>();
         for(int i = 0; i <= currentPlayerId; i++) {
-            Rocket player = new Rocket(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG, gc);
+            RocketUI player = new RocketUI(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG, gc);
             players.add(player);
         }
 
-        shots = new ArrayList<>();
-
-        // todo: create new threads to get other player positions and draw
+        shots = new HashMap<Integer,ShotUI>();
     }
 
     /* run graphicscontext */
@@ -109,12 +106,12 @@ public class PlayGround extends Application {
         // player.update(); /* for explosion logic */
         for(int i = 0; i < players.size(); i++) {
             if(i != currentPlayerId) {
-                Rocket ally = players.get(i);
+                RocketUI ally = players.get(i);
                 ally.draw();
             }
         }
         
-        Rocket player = players.get(currentPlayerId);
+        RocketUI player = players.get(currentPlayerId);
 		player.draw();
         player.posX = (int) mouseX;
         player.posY = (int) mouseY;
@@ -126,23 +123,23 @@ public class PlayGround extends Application {
 		// 	}
 		// });
 		
-		
-		for (int i = shots.size() - 1; i >=0 ; i--) {
-			Shot shot = shots.get(i);
-			if(shot.posY < 0 || shot.toRemove)  { 
-				shots.remove(i);
-				continue;
-			}
-			shot.update();
-			shot.draw();
-			// for (Bomb bomb : Bombs) {
-			// 	if(shot.colide(bomb) && !bomb.exploding) {
-			// 		score++;
-			// 		bomb.explode();
-			// 		shot.toRemove = true;
-			// 	}
-			// }
-		}
+		// /* old code for shots arraylist */
+		// for (int i = shots.size() - 1; i >=0 ; i--) {
+		// 	Shot shot = shots.get(i);
+		// 	if(shot.posY < 0 || shot.toRemove)  { 
+		// 		shots.remove(i);
+		// 		continue;
+		// 	}
+		// 	shot.update();
+		// 	shot.draw();
+		// 	// for (Bomb bomb : Bombs) {
+		// 	// 	if(shot.colide(bomb) && !bomb.exploding) {
+		// 	// 		score++;
+		// 	// 		bomb.explode();
+		// 	// 		shot.toRemove = true;
+		// 	// 	}
+		// 	// }
+		// }
 		
 		// for (int i = Bombs.size() - 1; i >= 0; i--){  
 		// 	if(Bombs.get(i).destroyed)  {
@@ -157,7 +154,22 @@ public class PlayGround extends Application {
 		// for (int i = 0; i < univ.size(); i++) {
 		// 	if(univ.get(i).posY > HEIGHT)
 		// 		univ.remove(i);
-		// }
+        // }
+        
+        /* Traversing Shots map */
+        try {
+            Set set = shots.entrySet();
+            Iterator iter = set.iterator();
+            while(iter.hasNext()) {
+                Map.Entry entry = (Map.Entry) iter.next();
+                int id = (int) entry.getKey();
+                ShotUI shot = (ShotUI) entry.getValue();
+                shot.draw();
+            }
+        } catch(ConcurrentModificationException ex) {
+            // System.out.println("Concurrent!");
+        }
+        
     }
     
     public void setCurrentPlayerId(int playerId) {
@@ -165,23 +177,40 @@ public class PlayGround extends Application {
     }
 
     public void addPlayer() {
-        Rocket player = new Rocket(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG, gc);
+        RocketUI player = new RocketUI(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG, gc);
         players.add(player);
     }
 
-    public Rocket getPlayer(int id) {
+    public RocketUI getPlayer(int id) {
         return players.get(id);
     }
 
     public void updatePlayer(int id, int xPos, int yPos) {
-        Rocket player = players.get(id);
+        RocketUI player = players.get(id);
         player.posX = xPos;
         player.posY = yPos;
     }
 
-    public void addShot(int xPos, int yPos) {
-        Shot newShot = new Shot(xPos, yPos, gc);
-        shots.add(newShot);
+    public void addShot(int shotId, int xPos, int yPos) {
+        ShotUI newShot = new ShotUI(xPos, yPos, gc);
+        shots.put(shotId, newShot);
+    }
+
+    public void updateShot(int shotId, int xPos, int yPos) {
+        Shot shot = shots.get(shotId);
+        if(shot != null) {
+            shot.posX = xPos;
+            shot.posY = yPos;
+        }
+    }
+
+    public void removeShot(int shotId) {
+        ShotUI shot = shots.remove(shotId);
+        if(shot != null) {
+            // System.out.printf("Removed shot: %d %d %d\n", shotId, shot.posX, shot.posY);
+            shot.draw();
+        }
+            
     }
 
     // public class Rocket {

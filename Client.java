@@ -60,7 +60,7 @@ public class Client {
     }
 
     public void sendNewShotMessage(int xPos, int yPos) {
-        String message = Message.createNewShotMessage(xPos, yPos);
+        String message = Message.createClientNewShotMessage(xPos, yPos);
         try {
             // System.out.println("(" + message + ")");
             writer.write(message);
@@ -89,12 +89,32 @@ public class Client {
                 playGround.updatePlayer(playerId, xPos, yPos);
                 break;
 
-            case Message.NEW_SHOT:
+            case Message.SERVER_NEW_SHOT:
                 String[] partshot = message.split(",");
-                int shotXPos = Integer.parseInt(partshot[1]);
-                int shotYPos = Integer.parseInt(partshot[2]);
+                int shotId = Integer.parseInt(partshot[1]);
+                int shotXPos = Integer.parseInt(partshot[2]);
+                int shotYPos = Integer.parseInt(partshot[3]);
 
-                playGround.addShot(shotXPos, shotYPos);
+                playGround.addShot(shotId, shotXPos, shotYPos);
+                break;
+
+            case Message.SHOT_POS:
+                String[] shotpos = message.split(",");
+                int id = Integer.parseInt(shotpos[1]);
+                int shotX = Integer.parseInt(shotpos[2]);
+                int shotY = Integer.parseInt(shotpos[3]);
+
+                playGround.updateShot(id, shotX, shotY);
+                break;
+
+            case Message.REMOVE_SHOT:
+                String[] shotremove = message.split(",");
+                int removeId = Integer.parseInt(shotremove[1]);
+
+                playGround.removeShot(removeId);
+                break;
+
+            default:
                 break;
         }
     }
