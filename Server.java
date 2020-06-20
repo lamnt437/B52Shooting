@@ -9,19 +9,30 @@ import java.util.Set;
 import java.util.HashSet;
 
 public class Server {
+    /* constant */
+    public static final int ENEMY_SIZE = 60;
+    public static final int PLAYER_SIZE = 60;
+    public static final int MAX_ENEMIES = 10;
+    public static final int HEIGHT = 600;
+
     private int port;
     private Set<UserThread> userThreads = new HashSet<>();
     private List<Integer> players;
+    // enemy hash map
+
+    private Map<Integer,Enemy> enemies;
+
     // private Set<Shot> shots;
     private Map<Integer,Shot> shots;
     private int numberOfPlayers = 0;
     private int numberOfShots = 0;
+    private int numberOfEnemies = 0;
  
     public Server(int port) {
         this.port = port;
-        players = new ArrayList<>();
-        // shots = new ArrayList<>();
+        players = new ArrayList<>();        
         shots = new HashMap<Integer,Shot>();
+        enemies = new HashMap<Integer,Enemy>();
     }
  
     public void execute() {
@@ -32,6 +43,9 @@ public class Server {
             // create a new shotThread for updating shot positions
             ShotThread shotThread = new ShotThread(this, shots);
             shotThread.start();
+
+            EnemyThread enemyThread = new EnemyThread(this, enemies);
+            enemyThread.start();
  
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -42,8 +56,8 @@ public class Server {
                 broadcast(Message.createNewPlayerMessage(numberOfPlayers), newUser);
                 numberOfPlayers++;
 
+                newUser.start();
                 userThreads.add(newUser);
-                newUser.start(); 
             }
  
         } catch (IOException ex) {
@@ -68,6 +82,7 @@ public class Server {
      * Delivers a message from one user to others (broadcasting)
      */
     void broadcast(String message, UserThread excludeUser) {
+        // System.out.println(message);
         for (UserThread aUser : userThreads) {
             if (aUser != excludeUser) {
                 aUser.sendMessage(message);
@@ -112,6 +127,15 @@ public class Server {
         int id = numberOfShots;
         numberOfShots++;
 
+        return id;
+    }
+
+    public int addEnemy(int xPos, int yPos) {
+        Enemy newEnemy = new Enemy(xPos, yPos, ENEMY_SIZE);
+
+        enemies.put(numberOfEnemies, newEnemy);
+        int id = numberOfEnemies;
+        numberOfEnemies++;
         return id;
     }
 }

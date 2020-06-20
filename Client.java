@@ -114,6 +114,31 @@ public class Client {
                 playGround.removeShot(removeId);
                 break;
 
+            case Message.NEW_ENEMY:
+                String[] partenemy = message.split(",");
+                int enemyId = Integer.parseInt(partenemy[1]);
+                int enemyXPos = Integer.parseInt(partenemy[2]);
+                int enemyYPos = Integer.parseInt(partenemy[3]);
+
+                playGround.addEnemy(enemyId, enemyXPos, enemyYPos);
+                break;
+
+            case Message.ENEMY_POS:
+                String[] enemypos = message.split(",");
+                int posId = Integer.parseInt(enemypos[1]);
+                int enemyX = Integer.parseInt(enemypos[2]);
+                int enemyY = Integer.parseInt(enemypos[3]);
+
+                playGround.updateEnemy(posId, enemyX, enemyY);
+                break;
+
+            case Message.REMOVE_ENEMY:
+                String[] enemyRemove = message.split(",");
+                int removeEnemyId = Integer.parseInt(enemyRemove[1]);
+
+                playGround.removeEnemy(removeEnemyId);
+                break;
+
             default:
                 break;
         }
