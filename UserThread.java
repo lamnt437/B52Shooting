@@ -44,7 +44,11 @@ public class UserThread extends Thread {
      * Sends a message to the client.
      */
     void sendMessage(String message) {
-        writer.println(message);
+        try {
+            writer.println(message);
+        } catch(NullPointerException ex) {
+            System.out.println("NULL");
+        }
     }
 
     void processClientMessage(String message) {

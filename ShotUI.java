@@ -9,7 +9,7 @@ public class ShotUI extends Shot {
     public ShotUI(int posX, int posY, GraphicsContext gc) {
         super(posX, posY);
         this.gc = gc;
-    }    
+    }
 
     public void draw() {
         if(!toRemove) {
