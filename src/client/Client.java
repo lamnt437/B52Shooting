@@ -1,5 +1,8 @@
+package src.client;
+
 import java.io.*;
 import java.net.*;
+import src.utils.*;
 
 public class Client {
     protected BufferedReader reader;

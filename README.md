@@ -12,15 +12,15 @@ set PATH_TO_FX="path\to\your\javafx-sdk-14\lib"
 
 Compile and run the server
 ```bash
-javac Server.java UserThread.java
-java Server 5000
+javac src/server/Server.java src/server/UserThread.java
+java src/server/Server 5000
 
 ```
 
 Compile and run the client
 ```bash
-javac --module-path %PATH_TO_FX% --add-modules javafx.controls PlayGround.java Client.java ClientReadThread.java Message.java
+javac --module-path %PATH_TO_FX% --add-modules javafx.controls src/client/PlayGround.java
 
-java --module-path %PATH_TO_FX% --add-modules javafx.controls PlayGround
+java --module-path %PATH_TO_FX% --add-modules javafx.controls src.client.PlayGround
 
 ```

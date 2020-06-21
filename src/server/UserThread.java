@@ -1,6 +1,9 @@
+package src.server;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import src.utils.*;
  
 public class UserThread extends Thread {
     private Socket socket;
@@ -28,16 +31,16 @@ public class UserThread extends Thread {
             // send initialized id to player
             sendMessage(Message.createInitIdMessage(userId));
             System.out.println(Message.createInitIdMessage(userId));
- 
-            String clientMessage;
- 
+
+            Rocket player = players.get(userId);
             try {
-                Thread.sleep(3000);
+                Thread.sleep(5000);
             } catch(InterruptedException ex) {
-                System.out.println("Error in user thread!");
-                ex.printStackTrace();
+
             }
-            
+            player.isActive = true;
+ 
+            String clientMessage;            
             do {
                 clientMessage = reader.readLine();
                 // System.out.println(clientMessage);
