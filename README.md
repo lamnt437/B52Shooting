@@ -1,5 +1,6 @@
 # B52Shooting
-## Shoot as many B52s as you can! This SpaceInvaders-like game allows multiple players joining, by using Socket communication.
+## Shoot as many B52s as you can! 
+This SpaceInvaders-like game allows multiple players joining, by using Socket communication.
 
 Install JavaFx [here](https://gluonhq.com/products/javafx/)
 
