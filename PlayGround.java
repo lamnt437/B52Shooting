@@ -39,6 +39,8 @@ public class PlayGround extends Application {
     int currentPlayerId = -1;
     private double mouseX;
     private double mouseY;
+    private int score = 0;
+    private boolean gameOver = false;
 
     /* network */
     protected Client client;
@@ -60,12 +62,15 @@ public class PlayGround extends Application {
             mouseY = e.getY();
         });
         canvas.setOnMouseClicked(e -> {
-            RocketUI player = players.get(currentPlayerId);
-            if (shots.size() < MAX_SHOTS) {
-                ShotUI newShot = player.shoot();
-                // shots.put(1, newShot);
-                client.sendNewShotMessage(newShot.posX, newShot.posY);
+            if (!gameOver) {
+                RocketUI player = players.get(currentPlayerId);
+                if (shots.size() < MAX_SHOTS) {
+                    ShotUI newShot = player.shoot();
+                    // shots.put(1, newShot);
+                    client.sendNewShotMessage(newShot.posX, newShot.posY);
+                }
             }
+
             // if(gameOver) {
             // gameOver = false;
             // setup();
@@ -105,15 +110,14 @@ public class PlayGround extends Application {
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setFont(Font.font(20));
         gc.setFill(Color.WHITE);
-        // gc.fillText("Score: " + score, 60, 20);
+        gc.fillText("Score: " + score, 60, 20);
 
-        // if(gameOver) {
-        // gc.setFont(Font.font(35));
-        // gc.setFill(Color.YELLOW);
-        // gc.fillText("Game Over \n Your Score is: " + score + " \n Click to play
-        // again", WIDTH / 2, HEIGHT /2.5);
-        // // return;
-        // }
+        if(gameOver) {
+            gc.setFont(Font.font(35));
+            gc.setFill(Color.YELLOW);
+            gc.fillText("Game Over \n Your Score is: " + score, WIDTH / 2, HEIGHT /2.5);
+        // return;
+        }
         // univ.forEach(Universe::draw);
 
         // player.update(); /* for explosion logic */
@@ -124,11 +128,13 @@ public class PlayGround extends Application {
             }
         }
 
-        RocketUI player = players.get(currentPlayerId);
-        player.draw();
-        player.posX = (int) mouseX;
-        player.posY = (int) mouseY;
-        client.sendPosition(currentPlayerId, player.posX, player.posY);
+        if (!gameOver) {
+            RocketUI player = players.get(currentPlayerId);
+            player.draw();
+            player.posX = (int) mouseX;
+            player.posY = (int) mouseY;
+            client.sendPosition(currentPlayerId, player.posX, player.posY);
+        }
 
         // Bombs.stream().peek(Rocket::update).peek(Rocket::draw).forEach(e -> {
         // if(player.colide(e) && !player.exploding) {
@@ -218,8 +224,17 @@ public class PlayGround extends Application {
         player.posY = yPos;
     }
 
+    public void removePlayer(int playerId) {
+        // RocketUI player = players.remove(playerId);
+        // if (player != null) {
+        // // System.out.printf("Removed shot: %d %d %d\n", shotId, shot.posX,
+        // shot.posY);
+        // player.draw();
+        // }
+    }
+
     public void addShot(int shotId, int xPos, int yPos) {
-        ShotUI newShot = new ShotUI(xPos, yPos, gc);
+        ShotUI newShot = new ShotUI(xPos, yPos, -1, gc);
         shots.put(shotId, newShot);
     }
 
@@ -258,6 +273,15 @@ public class PlayGround extends Application {
             // System.out.printf("Removed shot: %d %d %d\n", shotId, shot.posX, shot.posY);
             enemy.draw();
         }
+    }
+
+    public void incrementScore() {
+        score += 1;
+        // System.out.printf("Score: %d\n", score);
+    }
+
+    public void makeGameOver() {
+        gameOver = true;
     }
 
     // public class Rocket {

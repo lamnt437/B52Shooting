@@ -12,7 +12,7 @@ public class RocketUI extends Rocket {
     }
     
     public ShotUI shoot() {
-        return new ShotUI(posX + size / 2 - Shot.size / 2, posY - Shot.size, gc);
+        return new ShotUI(posX + size / 2 - Shot.size / 2, posY - Shot.size, -1, gc);
     }
 
     // public void update() {

@@ -17,7 +17,7 @@ public class Server {
 
     private int port;
     private Set<UserThread> userThreads = new HashSet<>();
-    private List<Integer> players;
+    private Map<Integer,Rocket> players;
     // enemy hash map
 
     private Map<Integer,Enemy> enemies;
@@ -27,10 +27,13 @@ public class Server {
     private int numberOfPlayers = 0;
     private int numberOfShots = 0;
     private int numberOfEnemies = 0;
+
+    // start generate enemy
+    private boolean startEnemy = false;
  
     public Server(int port) {
         this.port = port;
-        players = new ArrayList<>();        
+        players = new HashMap<Integer,Rocket>();        
         shots = new HashMap<Integer,Shot>();
         enemies = new HashMap<Integer,Enemy>();
     }
@@ -41,22 +44,27 @@ public class Server {
             System.out.println("Server is listening on port " + port);
 
             // create a new shotThread for updating shot positions
-            ShotThread shotThread = new ShotThread(this, shots);
+            ShotThread shotThread = new ShotThread(this, shots, enemies);
             shotThread.start();
 
-            EnemyThread enemyThread = new EnemyThread(this, enemies);
-            enemyThread.start();
+            EnemyThread enemyThread = new EnemyThread(this, enemies, players);
+            
  
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("New player connected");
 
-                players.add(numberOfPlayers);
-                UserThread newUser = new UserThread(socket, this, numberOfPlayers);
-                broadcast(Message.createNewPlayerMessage(numberOfPlayers), newUser);
-                numberOfPlayers++;
+                int playerId = addPlayer();
+                UserThread newUser = new UserThread(socket, this, playerId, players);
+                broadcast(Message.createNewPlayerMessage(playerId), newUser);
 
                 newUser.start();
+
+                if(!startEnemy) {
+                    enemyThread.start();
+                    startEnemy = true;
+                }
+                    
                 userThreads.add(newUser);
             }
  
@@ -119,8 +127,19 @@ public class Server {
     //     return !this.userNames.isEmpty();
     // }
 
-    public int addShot(int xPos, int yPos) {
-        Shot newShot = new Shot(xPos, yPos);
+    public int addPlayer() {
+        
+        Rocket newPlayer = new Rocket(400, 600, PLAYER_SIZE);
+        
+        int id = numberOfPlayers;
+        players.put(id,newPlayer);
+        numberOfPlayers++;
+        System.out.printf("Number of Player: %d\n", players.size());
+        return id;
+    }
+
+    public int addShot(int xPos, int yPos, int ownerId) {
+        Shot newShot = new Shot(xPos, yPos, ownerId);
 
         // add new shot to shot list
         shots.put(numberOfShots, newShot);
@@ -137,5 +156,31 @@ public class Server {
         int id = numberOfEnemies;
         numberOfEnemies++;
         return id;
+    }
+
+    public void incrementScore(int userId) {
+        for (UserThread aUser : userThreads) {
+            if (aUser.getUserId() == userId) {
+                aUser.incrementScore();
+                String message = Message.createMessageIncrementScore();
+                aUser.sendMessage(message);
+            }
+        }
+    }
+
+    public void makeGameOver(int lostPlayerId) {
+        for(UserThread aUser : userThreads) {
+            if(aUser.getUserId() == lostPlayerId) {
+                // send game over message to lost player
+                String gameOverMessage = Message.createGameOverMessage();
+                aUser.sendMessage(gameOverMessage);
+            } else {
+                // broadcast remove user message
+                String removePlayerMessage = Message.createRemovePlayerMessage(lostPlayerId);
+                aUser.sendMessage(removePlayerMessage);
+            }
+        }
+
+        players.remove(lostPlayerId);
     }
 }
