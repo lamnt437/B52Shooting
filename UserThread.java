@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.*;
  
 public class UserThread extends Thread {
     private Socket socket;
@@ -7,11 +8,13 @@ public class UserThread extends Thread {
     private PrintWriter writer;
     private int userId;
     private int score = 0;
+    private Map<Integer,Rocket> players;
  
-    public UserThread(Socket socket, Server server, int userId) {
+    public UserThread(Socket socket, Server server, int userId, Map<Integer,Rocket> players) {
         this.socket = socket;
         this.server = server;
         this.userId = userId;
+        this.players = players;
     }
  
     public void run() {
@@ -24,9 +27,17 @@ public class UserThread extends Thread {
 
             // send initialized id to player
             sendMessage(Message.createInitIdMessage(userId));
+            System.out.println(Message.createInitIdMessage(userId));
  
             String clientMessage;
  
+            try {
+                Thread.sleep(3000);
+            } catch(InterruptedException ex) {
+                System.out.println("Error in user thread!");
+                ex.printStackTrace();
+            }
+            
             do {
                 clientMessage = reader.readLine();
                 // System.out.println(clientMessage);
@@ -60,7 +71,19 @@ public class UserThread extends Thread {
                 server.broadcast(message, this);
                 break;
             case Message.POSITION:
-                server.broadcast(message, this);
+                String[] messparts = message.split(",");
+                int playerId = Integer.parseInt(messparts[1]);
+                int playerXPos = Integer.parseInt(messparts[2]);
+                int playerYPos = Integer.parseInt(messparts[3]);
+                // if(playerId >= players.size())
+                //     break;
+                Rocket player = players.get(playerId);
+                if(player != null) {
+                    player.posX = playerXPos;
+                    player.posY = playerYPos;
+                    server.broadcast(message, this);
+                }
+                
                 break;
             case Message.CLIENT_NEW_SHOT:
                 // System.out.println(message);

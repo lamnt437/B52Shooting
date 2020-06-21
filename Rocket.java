@@ -1,6 +1,3 @@
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-
 public class Rocket {
 
     int posX, posY, size;
@@ -18,11 +15,15 @@ public class Rocket {
     //     destroyed = explosionStep > EXPLOSION_STEPS;
     // }
 
-    // public boolean colide(Rocket other) {
-    //     int d = distance(this.posX + size / 2, this.posY + size /2, 
-    //                     other.posX + other.size / 2, other.posY + other.size / 2);
-    //     return d < other.size / 2 + this.size / 2 ;
-    // }
+    private int distance(int x1, int y1, int x2, int y2) {
+		return (int) Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
+	}
+
+    public boolean collide(Enemy other) {
+        int d = distance(this.posX + size / 2, this.posY + size /2, 
+                        other.posX + other.size / 2, other.posY + other.size / 2);
+        return d < other.size / 2 + this.size / 2 ;
+    }
     
     // public void explode() {
     //     exploding = true;

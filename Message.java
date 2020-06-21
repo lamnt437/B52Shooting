@@ -10,6 +10,7 @@ public class Message {
     public static final int REMOVE_ENEMY = 9;
     public static final int REMOVE_PLAYER = 10;
     public static final int INCREMENT_SCORE = 11;
+    public static final int GAME_OVER = 12;
 
     /* messages for player handling */
 
@@ -78,6 +79,11 @@ public class Message {
 
     public static String createMessageIncrementScore() {
         String message = String.format("%d", INCREMENT_SCORE);
+        return message;
+    }
+
+    public static String createGameOverMessage() {
+        String message = String.format("%d", GAME_OVER);
         return message;
     }
  

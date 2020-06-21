@@ -143,6 +143,18 @@ public class Client {
                 playGround.incrementScore();
                 break;
 
+            case Message.GAME_OVER:
+                playGround.makeGameOver();
+                break;
+
+            case Message.REMOVE_PLAYER:
+                System.out.println("Remove player!");
+                String[] playerRemove = message.split(",");
+                int lostPlayerId = Integer.parseInt(playerRemove[1]);
+
+                playGround.removePlayer(lostPlayerId);
+                break;
+
             default:
                 break;
         }

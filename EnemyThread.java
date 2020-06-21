@@ -2,16 +2,19 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.List;
 
 public class EnemyThread extends Thread {
     private Map<Integer, Enemy> enemies;
+    private Map<Integer,Rocket> players;
     private Server server;
     private Random randomEngine = new Random();
     // Check if number of enemy is max
 
-    public EnemyThread(Server server, Map<Integer, Enemy> enemies) {
+    public EnemyThread(Server server, Map<Integer, Enemy> enemies, Map<Integer,Rocket> players) {
         this.server = server;
         this.enemies = enemies;
+        this.players = players;
     }
 
     public void run() {
@@ -34,6 +37,22 @@ public class EnemyThread extends Thread {
                 for (Map.Entry enemyEle : enemies.entrySet()) {
                     int id = (int) enemyEle.getKey();
                     Enemy enemy = (Enemy) enemyEle.getValue();
+
+                    /* check collide with players */
+                    try {
+                        for (Map.Entry playerElm : players.entrySet()) {  
+                            int playerId = (int) playerElm.getKey();
+                            Rocket player = (Rocket) playerElm.getValue();
+                            if(player.collide(enemy)) {
+                                System.out.println("Player collide!");
+                                server.makeGameOver(playerId);
+                                // player.toRemove = true;
+                                enemy.toRemove = true;
+                            }
+                        }
+                    } catch(NullPointerException ex) {
+                        System.out.println("Null when check collide!");
+                    }
 
                     if (enemy.posY > Server.HEIGHT || enemy.toRemove) {
                         enemies.remove(id);
