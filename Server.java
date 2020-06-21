@@ -17,7 +17,7 @@ public class Server {
 
     private int port;
     private Set<UserThread> userThreads = new HashSet<>();
-    private List<Integer> players;
+    private List<Rocket> players;
     // enemy hash map
 
     private Map<Integer,Enemy> enemies;
@@ -41,7 +41,7 @@ public class Server {
             System.out.println("Server is listening on port " + port);
 
             // create a new shotThread for updating shot positions
-            ShotThread shotThread = new ShotThread(this, shots);
+            ShotThread shotThread = new ShotThread(this, shots, enemies);
             shotThread.start();
 
             EnemyThread enemyThread = new EnemyThread(this, enemies);
