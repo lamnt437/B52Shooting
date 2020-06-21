@@ -1,3 +1,5 @@
+package src.utils;
+
 public class Message {
     public static final int POSITION = 1;
     public static final int NEW_PLAYER = 2;

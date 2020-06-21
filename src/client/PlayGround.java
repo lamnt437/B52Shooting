@@ -1,3 +1,5 @@
+package src.client;
+
 import javafx.application.Application;
 import javafx.scene.image.Image;
 import javafx.scene.canvas.GraphicsContext;
@@ -13,7 +15,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import java.util.*;
-import java.util.Random;
+import src.utils.*;
 
 public class PlayGround extends Application {
     static final Image PLAYER_IMG = new Image("./images/player.png");
@@ -95,7 +97,7 @@ public class PlayGround extends Application {
         // build array of players
         players = new ArrayList<>();
         for (int i = 0; i <= currentPlayerId; i++) {
-            RocketUI player = new RocketUI(WIDTH / 2, HEIGHT - PLAYER_SIZE, PLAYER_SIZE, PLAYER_IMG, gc);
+            RocketUI player = new RocketUI(WIDTH / 2, HEIGHT + 100, PLAYER_SIZE, PLAYER_IMG, gc);
             players.add(player);
         }
 

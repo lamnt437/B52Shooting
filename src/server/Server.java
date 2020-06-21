@@ -1,3 +1,5 @@
+package src.server;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.IOException;
@@ -7,6 +9,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import src.utils.*;
 
 public class Server {
     /* constant */
@@ -97,35 +100,6 @@ public class Server {
             }
         }
     }
- 
-    /**
-     * Stores username of the newly connected client.
-     */
-    // void addUserName(String userName) {
-    //     userNames.add(userName);
-    // }
- 
-    /**
-     * When a client is disconneted, removes the associated username and UserThread
-     */
-    // void removeUser(String userName, UserThread aUser) {
-    //     boolean removed = userNames.remove(userName);
-    //     if (removed) {
-    //         userThreads.remove(aUser);
-    //         System.out.println("The user " + userName + " quitted");
-    //     }
-    // }
- 
-    // Set<String> getUserNames() {
-    //     return this.userNames;
-    // }
- 
-    /**
-     * Returns true if there are other users connected (not count the currently connected user)
-     */
-    // boolean hasUsers() {
-    //     return !this.userNames.isEmpty();
-    // }
 
     public int addPlayer() {
         
@@ -134,7 +108,8 @@ public class Server {
         int id = numberOfPlayers;
         players.put(id,newPlayer);
         numberOfPlayers++;
-        System.out.printf("Number of Player: %d\n", players.size());
+        // System.out.printf("Number of Player: %d\n", players.size());
+        newPlayer.isActive = false;
         return id;
     }
 

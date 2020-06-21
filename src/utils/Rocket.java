@@ -1,8 +1,11 @@
+package src.utils;
+
 public class Rocket {
 
-    int posX, posY, size;
+    public int posX, posY, size;
     // boolean exploding, destroyed;
     // int explosionStep = 0;
+    public boolean isActive = true;
     
     public Rocket(int posX, int posY, int size) {
         this.posX = posX;

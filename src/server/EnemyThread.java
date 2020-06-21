@@ -1,8 +1,11 @@
+package src.server;
+
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.List;
+import src.utils.*;
 
 public class EnemyThread extends Thread {
     private Map<Integer, Enemy> enemies;
@@ -43,8 +46,8 @@ public class EnemyThread extends Thread {
                         for (Map.Entry playerElm : players.entrySet()) {  
                             int playerId = (int) playerElm.getKey();
                             Rocket player = (Rocket) playerElm.getValue();
-                            if(player.collide(enemy)) {
-                                System.out.println("Player collide!");
+                            if(player.isActive && player.collide(enemy)) {
+                                // System.out.println("Player collide!");
                                 server.makeGameOver(playerId);
                                 // player.toRemove = true;
                                 enemy.toRemove = true;

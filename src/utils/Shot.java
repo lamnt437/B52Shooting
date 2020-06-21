@@ -1,9 +1,11 @@
+package src.utils;
+
 //bullets
 public class Shot {
 		
     public boolean toRemove;
 
-    int posX, posY, speed = 1;
+    public int posX, posY, speed = 1;
     static final int size = 6;
     private int ownerId;
         
