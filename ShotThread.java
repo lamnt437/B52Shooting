@@ -27,6 +27,8 @@ public class ShotThread extends Thread {
                             Enemy enemy = (Enemy) enemyElm.getValue();
     
                             if(shot.collide(enemy)) {
+                                int ownerId = shot.getOwnerId();
+                                server.incrementScore(ownerId);
                                 shot.toRemove = true;
                                 enemy.toRemove = true;
                             }

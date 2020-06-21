@@ -6,8 +6,8 @@ import javafx.scene.paint.Color;
 public class ShotUI extends Shot {
     private GraphicsContext gc;
         
-    public ShotUI(int posX, int posY, GraphicsContext gc) {
-        super(posX, posY);
+    public ShotUI(int posX, int posY, int ownerId, GraphicsContext gc) {
+        super(posX, posY, ownerId);
         this.gc = gc;
     }
 

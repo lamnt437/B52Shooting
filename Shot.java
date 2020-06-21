@@ -5,10 +5,12 @@ public class Shot {
 
     int posX, posY, speed = 1;
     static final int size = 6;
+    private int ownerId;
         
-    public Shot(int posX, int posY) {
+    public Shot(int posX, int posY, int ownerId) {
         this.posX = posX;
         this.posY = posY;
+        this.ownerId = ownerId;
     }
 
     public void update() {
@@ -23,5 +25,9 @@ public class Shot {
     	int distance = distance(this.posX + size / 2, this.posY + size / 2, 
         enemy.posX + enemy.size / 2, enemy.posY + enemy.size / 2);
     	return distance  < enemy.size / 2 + size / 2;
+    }
+
+    public int getOwnerId() {
+        return ownerId;
     }
 }

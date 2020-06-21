@@ -9,6 +9,7 @@ public class Message {
     public static final int ENEMY_POS = 8;
     public static final int REMOVE_ENEMY = 9;
     public static final int REMOVE_PLAYER = 10;
+    public static final int INCREMENT_SCORE = 11;
 
     /* messages for player handling */
 
@@ -75,6 +76,11 @@ public class Message {
         return message;
     }
 
+    public static String createMessageIncrementScore() {
+        String message = String.format("%d", INCREMENT_SCORE);
+        return message;
+    }
+ 
     public static int getType(String message) {
         String[] parts = message.split(",");
         int type = Integer.parseInt(parts[0]);

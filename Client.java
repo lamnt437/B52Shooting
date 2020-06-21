@@ -139,6 +139,10 @@ public class Client {
                 playGround.removeEnemy(removeEnemyId);
                 break;
 
+            case Message.INCREMENT_SCORE:
+                playGround.incrementScore();
+                break;
+
             default:
                 break;
         }

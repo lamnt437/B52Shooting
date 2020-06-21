@@ -39,6 +39,7 @@ public class PlayGround extends Application {
     int currentPlayerId = -1;
     private double mouseX;
     private double mouseY;
+    private int score = 0;
 
     /* network */
     protected Client client;
@@ -105,7 +106,7 @@ public class PlayGround extends Application {
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setFont(Font.font(20));
         gc.setFill(Color.WHITE);
-        // gc.fillText("Score: " + score, 60, 20);
+        gc.fillText("Score: " + score, 60, 20);
 
         // if(gameOver) {
         // gc.setFont(Font.font(35));
@@ -219,7 +220,7 @@ public class PlayGround extends Application {
     }
 
     public void addShot(int shotId, int xPos, int yPos) {
-        ShotUI newShot = new ShotUI(xPos, yPos, gc);
+        ShotUI newShot = new ShotUI(xPos, yPos, -1, gc);
         shots.put(shotId, newShot);
     }
 
@@ -258,6 +259,11 @@ public class PlayGround extends Application {
             // System.out.printf("Removed shot: %d %d %d\n", shotId, shot.posX, shot.posY);
             enemy.draw();
         }
+    }
+
+    public void incrementScore() {
+        score += 1;
+        // System.out.printf("Score: %d\n", score);
     }
 
     // public class Rocket {

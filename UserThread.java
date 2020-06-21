@@ -6,6 +6,7 @@ public class UserThread extends Thread {
     private Server server;
     private PrintWriter writer;
     private int userId;
+    private int score = 0;
  
     public UserThread(Socket socket, Server server, int userId) {
         this.socket = socket;
@@ -66,7 +67,7 @@ public class UserThread extends Thread {
                 String[] parts = message.split(",");
                 int xPos = Integer.parseInt(parts[1]);
                 int yPos = Integer.parseInt(parts[2]);
-                int shotId = server.addShot(xPos, yPos);
+                int shotId = server.addShot(xPos, yPos, userId);
                 // System.out.printf("%d,%d,%d\n", shotId, xPos, yPos);
                 String broadcastMessage = Message.createServerNewShotMessage(shotId, xPos, yPos);
                 server.broadcast(broadcastMessage, null);
@@ -74,5 +75,17 @@ public class UserThread extends Thread {
             default:
                 break;
         }
+    }
+
+    public void incrementScore() {
+        score += 1;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public int getScore() {
+        return score;
     }
 }

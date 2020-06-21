@@ -17,7 +17,7 @@ public class Server {
 
     private int port;
     private Set<UserThread> userThreads = new HashSet<>();
-    private List<Rocket> players;
+    private List<Integer> players;
     // enemy hash map
 
     private Map<Integer,Enemy> enemies;
@@ -119,8 +119,8 @@ public class Server {
     //     return !this.userNames.isEmpty();
     // }
 
-    public int addShot(int xPos, int yPos) {
-        Shot newShot = new Shot(xPos, yPos);
+    public int addShot(int xPos, int yPos, int ownerId) {
+        Shot newShot = new Shot(xPos, yPos, ownerId);
 
         // add new shot to shot list
         shots.put(numberOfShots, newShot);
@@ -137,5 +137,15 @@ public class Server {
         int id = numberOfEnemies;
         numberOfEnemies++;
         return id;
+    }
+
+    public void incrementScore(int userId) {
+        for (UserThread aUser : userThreads) {
+            if (aUser.getUserId() == userId) {
+                aUser.incrementScore();
+                String message = Message.createMessageIncrementScore();
+                aUser.sendMessage(message);
+            }
+        }
     }
 }
