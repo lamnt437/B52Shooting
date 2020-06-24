@@ -20,7 +20,6 @@ java src/server/Server 5000
 Compile and run the client
 ```bash
 javac --module-path %PATH_TO_FX% --add-modules javafx.controls src/client/PlayGround.java
-
 java --module-path %PATH_TO_FX% --add-modules javafx.controls src.client.PlayGround
 
 ```
